@@ -21,26 +21,28 @@ class TrackPlayer {
   int _currentEventTick = 0;
 
   TrackPlayerEvent? nextUpcomingEvent(
-      int currentTimeMs, num tickToMsMultiplier) {
+      int currentTimeMs, num millisecondsInTick) {
     if (_currentEventIndex >= midiEvents.length) {
       return null;
     }
 
-    final currentEventTimeMs = (_currentEventTick * tickToMsMultiplier).floor();
+    final currentEvent = midiEvents[_currentEventIndex];
+    final currentEventTimeMs =
+        ((currentEvent.deltaTime + _currentEventTick) * millisecondsInTick)
+            .floor();
 
     if (currentEventTimeMs > currentTimeMs) {
       return null;
     }
 
-    final currentEvent = midiEvents[_currentEventIndex];
+    _currentEventTick += currentEvent.deltaTime;
 
     final currentTrackPlayerEvent = TrackPlayerEvent(
-      timeMs: currentEventTimeMs,
+      timeMs: (currentEvent.deltaTime * millisecondsInTick).floor(),
       tick: _currentEventTick,
       midiEvent: currentEvent,
     );
 
-    _currentEventTick += currentEvent.deltaTime;
     _currentEventIndex++;
 
     return currentTrackPlayerEvent;

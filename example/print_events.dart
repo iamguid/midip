@@ -4,7 +4,7 @@ import 'package:dart_midi/dart_midi.dart';
 import 'package:midip/src/midi_player.dart';
 
 void main(List<String> args) {
-  final file = File('./lib/example/assets/Test.mid');
+  final file = File('./example/assets/Test.mid');
   final parser = MidiParser();
   final result = parser.parseMidiFromFile(file);
   final player = MidiPlayer();
@@ -13,7 +13,10 @@ void main(List<String> args) {
 
   player.midiEventsStream.listen((event) {
     if (event is NoteOnEvent) {
-      print(event.noteNumber);
+      print('ON:  ${event.noteNumber}');
+    }
+    if (event is NoteOffEvent) {
+      print('OFF: ${event.noteNumber}');
     }
   });
 

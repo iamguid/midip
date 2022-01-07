@@ -198,13 +198,13 @@ class MidiPlayer {
   }
 
   /// Gets total number of events in the loaded MIDI file.
-  get totalEventsCount {
+  int get totalEventsCount {
     return _tracks.fold<int>(0,
         (previousValue, element) => previousValue + element.midiEvents.length);
   }
 
   /// Gets events.
-  get events {
+  List<MidiEvent> get events {
     return _tracks.fold<List<MidiEvent>>([], (previousValue, element) {
       previousValue.addAll(element.midiEvents);
       return previousValue;
