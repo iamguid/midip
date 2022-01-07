@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:dart_midi/dart_midi.dart';
 import 'package:midip/src/track_player.dart';
-import 'package:pausable_timer/pausable_timer.dart';
 
 enum MidiPlayerStatus { play, stop, pause, end }
 
