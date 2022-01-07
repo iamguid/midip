@@ -63,7 +63,10 @@ class MidiPlayer {
   Stopwatch? _playbackTimer;
 
   /// Offset that used for in fly bpm change
-  int _timeOffsetMs = 0;
+  int _bpmChangeTimeOffsetMs = 0;
+
+  /// Offset that used by users
+  int timeOffsetMs = 0;
 
   /// Periodic timer that calls [_playLoop] once at [_sampleRateMs]
   Timer? _loopTimer;
@@ -77,7 +80,9 @@ class MidiPlayer {
       return 0;
     }
 
-    return _playbackTimer!.elapsed.inMilliseconds + _timeOffsetMs;
+    return _playbackTimer!.elapsed.inMilliseconds +
+        _bpmChangeTimeOffsetMs +
+        timeOffsetMs;
   }
 
   /// Returns current tick
@@ -119,7 +124,7 @@ class MidiPlayer {
     final newTicks = currentTimeMs / newMillisecondsPerTicks;
     final newTicksMs = newTicks * currentMillisecondsPerTick;
 
-    _timeOffsetMs = (newTicksMs - currentTicksMs).floor();
+    _bpmChangeTimeOffsetMs = (newTicksMs - currentTicksMs).floor();
   }
 
   /// The main loop that calls each [_currentSampleRateMs]
