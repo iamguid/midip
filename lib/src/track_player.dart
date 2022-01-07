@@ -13,16 +13,16 @@ class TrackPlayerEvent {
 }
 
 class TrackPlayer {
-  final List<MidiEvent> _midiEvents;
+  final List<MidiEvent> midiEvents;
 
-  TrackPlayer(this._midiEvents);
+  TrackPlayer(this.midiEvents);
 
   int _currentEventIndex = 0;
   int _currentEventTick = 0;
 
   TrackPlayerEvent? nextUpcomingEvent(
       int currentTimeMs, num tickToMsMultiplier) {
-    if (_currentEventIndex >= _midiEvents.length) {
+    if (_currentEventIndex >= midiEvents.length) {
       return null;
     }
 
@@ -32,7 +32,7 @@ class TrackPlayer {
       return null;
     }
 
-    final currentEvent = _midiEvents[_currentEventIndex];
+    final currentEvent = midiEvents[_currentEventIndex];
 
     final currentTrackPlayerEvent = TrackPlayerEvent(
       timeMs: currentEventTimeMs,

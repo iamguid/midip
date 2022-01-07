@@ -4,9 +4,12 @@ import 'package:dart_midi/dart_midi.dart';
 import 'package:midip/src/track_player.dart';
 import 'package:pausable_timer/pausable_timer.dart';
 
+enum MidiPlayerStatus { play, stop, pause, end }
+
 class MidiPlayer {
   MidiPlayer() {
     midiEventsStream = _midiEventsSC.stream;
+    statusStream = _statusEventsSC.stream;
   }
 
   /// Sample rate in milliseconds that used by default
@@ -23,7 +26,7 @@ class MidiPlayer {
 
   /// Indicates is player in playing state or not
   bool _isPlaying = false;
-  get isPlaying => _isPlaying && !_isPaused;
+  get isPlaying => _isPlaying;
 
   /// Indicates is player in paused state or not
   bool _isPaused = false;
@@ -33,11 +36,17 @@ class MidiPlayer {
   bool _isStopped = true;
   get isStopped => _isStopped;
 
-  /// Stream controller where put playable midi events;
+  /// Stream controller where put playable midi events
   final StreamController<MidiEvent> _midiEventsSC =
       StreamController.broadcast();
 
   late Stream<MidiEvent> midiEventsStream;
+
+  /// Stream controller where put play status
+  final StreamController<MidiPlayerStatus> _statusEventsSC =
+      StreamController.broadcast();
+
+  late Stream<MidiPlayerStatus> statusStream;
 
   /// Loaded midi file
   MidiFile? _file;
@@ -53,6 +62,9 @@ class MidiPlayer {
 
   /// Periodic timer that calls [_playLoop] once at [_sampleRateMs]
   Timer? _loopTimer;
+
+  /// Count all events
+  int _processedEventsCount = 0;
 
   /// Returns current time of track in milliseconds
   int get currentTimeMs {
@@ -90,13 +102,19 @@ class MidiPlayer {
 
         final midiEvent = upcomingEvent.midiEvent;
 
-        // TODO: Handle end of file
         if (midiEvent is SetTempoEvent) {
           _currentTempoBpm = midiEvent.microsecondsPerBeat;
         }
 
         _midiEventsSC.add(midiEvent);
+
+        _processedEventsCount++;
       }
+    }
+
+    if (_processedEventsCount >= getTotalEvents()) {
+      stop();
+      _statusEventsSC.add(MidiPlayerStatus.end);
     }
   }
 
@@ -130,12 +148,19 @@ class MidiPlayer {
     // Stop looping
     _loopTimer!.cancel();
 
+    _isPlaying = false;
     _isPaused = true;
+    _isStopped = false;
+
+    _statusEventsSC.add(MidiPlayerStatus.pause);
   }
 
   /// Stop midi player and reset state
   void stop() {
     if (!isPlaying || isStopped) return;
+
+    // Reset events counter
+    _processedEventsCount = 0;
 
     // Stop and reset timer
     _playbackTimer!
@@ -145,7 +170,11 @@ class MidiPlayer {
     // Stop looping
     _loopTimer!.cancel();
 
+    _isPlaying = false;
+    _isPaused = false;
     _isStopped = true;
+
+    _statusEventsSC.add(MidiPlayerStatus.stop);
   }
 
   /// Start playing from begin
@@ -163,5 +192,15 @@ class MidiPlayer {
         Timer.periodic(const Duration(milliseconds: _sampleRateMs), _playLoop);
 
     _isPlaying = true;
+    _isPaused = false;
+    _isStopped = false;
+
+    _statusEventsSC.add(MidiPlayerStatus.play);
+  }
+
+  /// Gets total number of events in the loaded MIDI file.
+  getTotalEvents() {
+    return _tracks.fold<int>(0,
+        (previousValue, element) => previousValue + element.midiEvents.length);
   }
 }
