@@ -35,6 +35,12 @@ class MidiPlayer {
   bool _isStopped = true;
   get isStopped => _isStopped;
 
+  /// Total ticks in file
+  int _totalTicks = 0;
+
+  /// Total events in file
+  int _totalEvents = 0;
+
   /// Stream controller where put playable midi events
   final StreamController<MidiEvent> _midiEventsSC =
       StreamController.broadcast();
@@ -74,6 +80,34 @@ class MidiPlayer {
     return _playbackTimer!.elapsed.inMilliseconds + _timeOffsetMs;
   }
 
+  /// Returns current tick
+  int get currentTick {
+    return (currentTimeMs / _millisecondsPerTick).floor();
+  }
+
+  /// Returns total number of ticks in the loaded MIDI file
+  int get totalTicks {
+    return _totalTicks;
+  }
+
+  /// Progress from 0 to 1
+  num get currentProgress {
+    return 1 / totalTicks * currentTick;
+  }
+
+  /// Gets total number of events in the loaded MIDI file.
+  int get totalEvents {
+    return _totalEvents;
+  }
+
+  /// Gets events.
+  List<MidiEvent> get events {
+    return _tracks.fold<List<MidiEvent>>([], (previousValue, element) {
+      previousValue.addAll(element.midiEvents);
+      return previousValue;
+    });
+  }
+
   set tempo(int tempo) {
     final currentMillisecondsPerTick = _millisecondsPerTick;
     final currentTicks = currentTimeMs / currentMillisecondsPerTick;
@@ -111,7 +145,7 @@ class MidiPlayer {
       }
     }
 
-    if (_processedEventsCount >= totalEventsCount) {
+    if (_processedEventsCount >= totalEvents) {
       stop();
       _statusEventsSC.add(MidiPlayerStatus.end);
     }
@@ -132,8 +166,16 @@ class MidiPlayer {
   void load(MidiFile file) {
     _file = file;
 
+    _totalEvents = 0;
+    _totalTicks = 0;
+
     for (var events in file.tracks) {
       _tracks.add(TrackPlayer(events));
+
+      for (var event in events) {
+        _totalEvents++;
+        _totalTicks += event.deltaTime;
+      }
     }
   }
 
@@ -195,19 +237,5 @@ class MidiPlayer {
     _isStopped = false;
 
     _statusEventsSC.add(MidiPlayerStatus.play);
-  }
-
-  /// Gets total number of events in the loaded MIDI file.
-  int get totalEventsCount {
-    return _tracks.fold<int>(0,
-        (previousValue, element) => previousValue + element.midiEvents.length);
-  }
-
-  /// Gets events.
-  List<MidiEvent> get events {
-    return _tracks.fold<List<MidiEvent>>([], (previousValue, element) {
-      previousValue.addAll(element.midiEvents);
-      return previousValue;
-    });
   }
 }
