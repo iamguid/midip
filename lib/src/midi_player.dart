@@ -19,11 +19,11 @@ class MidiPlayer {
   static const _defaultTempoBpm = 120;
 
   /// Current tempo in bpm that used until set tempo midi event or setTempo
-  int currentTempoBpm = MidiPlayer._defaultTempoBpm;
+  int _currentTempoBpm = MidiPlayer._defaultTempoBpm;
 
   /// Indicates is player in playing state or not
   bool _isPlaying = false;
-  get isPlaying => _isPlaying;
+  get isPlaying => _isPlaying && !_isPaused;
 
   /// Indicates is player in paused state or not
   bool _isPaused = false;
@@ -48,7 +48,7 @@ class MidiPlayer {
   /// Timer that counts track time from beginning to end
   Stopwatch? _playbackTimer;
 
-  /// Offset that used for in fly bpm changes
+  /// Offset that used for in fly bpm change
   int _timeOffsetMs = 0;
 
   /// Periodic timer that calls [_playLoop] once at [_sampleRateMs]
@@ -61,6 +61,20 @@ class MidiPlayer {
     }
 
     return _playbackTimer!.elapsed.inMilliseconds + _timeOffsetMs;
+  }
+
+  set tempo(int tempo) {
+    final currentMillisecondsPerTick = _millisecondsPerTick;
+    final currentTicks = currentTimeMs / currentMillisecondsPerTick;
+    final currentTicksMs = currentTicks * currentMillisecondsPerTick;
+
+    _currentTempoBpm = tempo;
+
+    final newMillisecondsPerTicks = _millisecondsPerTick;
+    final newTicks = currentTimeMs / newMillisecondsPerTicks;
+    final newTicksMs = newTicks * currentMillisecondsPerTick;
+
+    _timeOffsetMs = (newTicksMs - currentTicksMs).floor();
   }
 
   /// The main loop that calls each [_currentSampleRateMs]
@@ -78,7 +92,7 @@ class MidiPlayer {
 
         // TODO: Handle end of file
         if (midiEvent is SetTempoEvent) {
-          currentTempoBpm = midiEvent.microsecondsPerBeat;
+          _currentTempoBpm = midiEvent.microsecondsPerBeat;
         }
 
         _midiEventsSC.add(midiEvent);
@@ -88,12 +102,12 @@ class MidiPlayer {
 
   num get _millisecondsPerTick {
     if (_file!.header.ticksPerBeat != null) {
-      return 60000 / (_file!.header.ticksPerBeat! * currentTempoBpm);
+      return 60000 / (_file!.header.ticksPerBeat! * _currentTempoBpm);
     } else {
       return 60000 /
           (_file!.header.framesPerSecond *
               _file!.header.ticksPerFrame *
-              currentTempoBpm);
+              _currentTempoBpm);
     }
   }
 
