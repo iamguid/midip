@@ -25,4 +25,12 @@ void main(List<String> args) {
   Timer(const Duration(seconds: 2), () {
     player.play();
   });
+
+  Timer(const Duration(seconds: 3), () {
+    player.stop();
+  });
+
+  Timer(const Duration(seconds: 4), () {
+    player.play();
+  });
 }

@@ -47,4 +47,9 @@ class TrackPlayer {
 
     return currentTrackPlayerEvent;
   }
+
+  void reset() {
+    _currentEventIndex = 0;
+    _currentEventTick = 0;
+  }
 }

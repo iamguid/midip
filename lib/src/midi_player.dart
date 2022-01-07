@@ -203,13 +203,18 @@ class MidiPlayer {
     // Reset events counter
     _processedEventsCount = 0;
 
+    // Reset track players
+    for (var track in _tracks) {
+      track.reset();
+    }
+
+    // Stop looping
+    _loopTimer!.cancel();
+
     // Stop and reset timer
     _playbackTimer!
       ..stop()
       ..reset();
-
-    // Stop looping
-    _loopTimer!.cancel();
 
     _isPlaying = false;
     _isPaused = false;
