@@ -111,7 +111,7 @@ class MidiPlayer {
       }
     }
 
-    if (_processedEventsCount >= getTotalEvents()) {
+    if (_processedEventsCount >= totalEventsCount) {
       stop();
       _statusEventsSC.add(MidiPlayerStatus.end);
     }
@@ -198,8 +198,16 @@ class MidiPlayer {
   }
 
   /// Gets total number of events in the loaded MIDI file.
-  getTotalEvents() {
+  get totalEventsCount {
     return _tracks.fold<int>(0,
         (previousValue, element) => previousValue + element.midiEvents.length);
+  }
+
+  /// Gets events.
+  get events {
+    return _tracks.fold<List<MidiEvent>>([], (previousValue, element) {
+      previousValue.addAll(element.midiEvents);
+      return previousValue;
+    });
   }
 }
