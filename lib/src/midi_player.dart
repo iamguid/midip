@@ -87,7 +87,7 @@ class MidiPlayer {
 
   /// Returns current tick
   int get currentTick {
-    return (currentTimeMs / _millisecondsPerTick).floor();
+    return (currentTimeMs / millisecondsPerTick).floor();
   }
 
   /// Returns total number of ticks in the loaded MIDI file
@@ -114,13 +114,13 @@ class MidiPlayer {
   }
 
   set tempo(int tempo) {
-    final currentMillisecondsPerTick = _millisecondsPerTick;
+    final currentMillisecondsPerTick = millisecondsPerTick;
     final currentTicks = currentTimeMs / currentMillisecondsPerTick;
     final currentTicksMs = currentTicks * currentMillisecondsPerTick;
 
     _currentTempoBpm = tempo;
 
-    final newMillisecondsPerTicks = _millisecondsPerTick;
+    final newMillisecondsPerTicks = millisecondsPerTick;
     final newTicks = currentTimeMs / newMillisecondsPerTicks;
     final newTicksMs = newTicks * currentMillisecondsPerTick;
 
@@ -132,7 +132,7 @@ class MidiPlayer {
     for (var track in _tracks) {
       while (true) {
         final upcomingEvent =
-            track.nextUpcomingEvent(currentTimeMs, _millisecondsPerTick);
+            track.nextUpcomingEvent(currentTimeMs, millisecondsPerTick);
 
         if (upcomingEvent == null) {
           break;
@@ -156,7 +156,7 @@ class MidiPlayer {
     }
   }
 
-  num get _millisecondsPerTick {
+  num get millisecondsPerTick {
     if (_file!.header.ticksPerBeat != null) {
       return 60000 / (_file!.header.ticksPerBeat! * _currentTempoBpm);
     } else {
