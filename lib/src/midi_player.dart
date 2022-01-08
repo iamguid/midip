@@ -77,7 +77,7 @@ class MidiPlayer {
   /// Returns current time of track in milliseconds
   int get currentTimeMs {
     if (_playbackTimer == null) {
-      return 0;
+      return timeOffsetMs;
     }
 
     return _playbackTimer!.elapsed.inMilliseconds +
