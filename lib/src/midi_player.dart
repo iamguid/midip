@@ -18,10 +18,10 @@ class MidiPlayer {
   static const _sampleRateMs = 5;
 
   /// Default tempo in bpm that used until set tempo midi event
-  static const _defaultTempoBpm = 120;
+  static const _defaultTempoBpm = 120.0;
 
   /// Current tempo in bpm that used until set tempo midi event or setTempo
-  int _currentTempoBpm = MidiPlayer._defaultTempoBpm;
+  num _currentTempoBpm = MidiPlayer._defaultTempoBpm;
 
   /// Indicates is player in playing state or not
   bool _isPlaying = false;
@@ -113,7 +113,7 @@ class MidiPlayer {
     });
   }
 
-  set tempo(int tempo) {
+  set tempo(num tempo) {
     final currentMillisecondsPerTick = millisecondsPerTick;
     final currentTicks = currentTimeMs / currentMillisecondsPerTick;
     final currentTicksMs = currentTicks * currentMillisecondsPerTick;
