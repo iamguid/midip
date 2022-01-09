@@ -40,7 +40,7 @@ class MidiPlayer {
   final StreamController<MidiEvent> _midiEventsSC =
       StreamController.broadcast();
 
-  late Stream<MidiEvent> midiEventsStream;
+  late Stream<MidiEvent> midiEventsStream = _midiEventsSC.stream;
 
   /// Stream controller where put play status
   final StreamController<MidiPlayerStatus> _statusEventsSC =
