@@ -6,11 +6,6 @@ import 'package:midip/src/track_player.dart';
 enum MidiPlayerStatus { play, stop, pause, end }
 
 class MidiPlayer {
-  MidiPlayer() {
-    midiEventsStream = _midiEventsSC.stream;
-    statusStream = _statusEventsSC.stream;
-  }
-
   /// Sample rate in milliseconds that used by default
   /// That sample rate based on "average" ppq (96) and "average" bpm (120)
   /// 60 / 120 = 0.5 seconds per beat
@@ -51,7 +46,12 @@ class MidiPlayer {
   final StreamController<MidiPlayerStatus> _statusEventsSC =
       StreamController.broadcast();
 
-  late Stream<MidiPlayerStatus> statusStream;
+  late Stream<MidiPlayerStatus> statusStream = _statusEventsSC.stream;
+
+  /// Stream controller where put each tick
+  final StreamController<int> _ticksEventsSC = StreamController.broadcast();
+
+  late Stream<int> ticksStream = _ticksEventsSC.stream;
 
   /// Loaded midi file
   MidiFile? _file;
@@ -149,6 +149,8 @@ class MidiPlayer {
         _processedEventsCount++;
       }
     }
+
+    _ticksEventsSC.add(currentTick);
 
     if (_processedEventsCount >= totalEvents) {
       stop();
