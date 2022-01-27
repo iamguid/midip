@@ -140,10 +140,6 @@ class MidiPlayer {
 
         final midiEvent = upcomingEvent.midiEvent;
 
-        if (midiEvent is SetTempoEvent) {
-          _currentTempoBpm = midiEvent.microsecondsPerBeat;
-        }
-
         _midiEventsSC.add(midiEvent);
 
         _processedEventsCount++;
